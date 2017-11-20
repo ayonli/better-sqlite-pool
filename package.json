@@ -1,0 +1,15 @@
+{
+    "name": "better-sqlite-pool",
+    "version": "0.1.0",
+    "description": "A connection pool for better-sqlite3.",
+    "main": "index.js",
+    "scripts": {
+        "test": "node test"
+    },
+    "author": "Ayon Lee",
+    "license": "MIT",
+    "dependencies": {
+        "better-sqlite3": "^4.0.3",
+        "node-gyp": "^3.6.2"
+    }
+}
