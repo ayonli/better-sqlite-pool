@@ -6,7 +6,19 @@
     "scripts": {
         "test": "node test"
     },
-    "author": "Ayon Lee",
+    "author": {
+        "name": "Ayon Lee",
+        "email": "i@hyurl.com",
+        "url": "hyurl.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyurl/better-sqlite-pool.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Hyurl/better-sqlite-pool/issues",
+        "email": "i@hyurl.com"
+    },
     "license": "MIT",
     "dependencies": {
         "better-sqlite3": "^4.0.3",
