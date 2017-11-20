@@ -4,7 +4,7 @@ const Database = require("better-sqlite3");
 /**
  * A connection pool for the module `better-sqlite3`.
  * 
- * Use this module to open pools and acquire connections, and `release` the 
+ * Using this module to open pools and acquire connections, and `release` the 
  * connection once it has done its work.
  */
 class Pool extends EventEmitter {
@@ -13,14 +13,14 @@ class Pool extends EventEmitter {
      * 
      * @param {String} path A SQLite database file path, can be set to 
      *  `:memory` to open a memory based database.
-     * @param {Object|Boolean} options May contain any of these:
+     * @param {Object|Boolean|Number} options May contain any of these:
      *  - `readonly` Default is `false`.
      *  - `memory` Default is `false`.
      *  - `fileMustExist` Default is `false`.
      *  - `max` Max connections in the pool, default is `5`.
      * 
-     *  If the argument is set to a boolean, it's equivalent to `readonly`, if
-     *  set to a number, it's equivalent to `max`.
+     *  If this argument is set to a boolean, it's equivalent to `readonly`, 
+     *  if set to a number, it's equivalent to `max`.
      * 
      * @see https://github.com/JoshuaWise/better-sqlite3/wiki/API#new-databasepath-options
      */
