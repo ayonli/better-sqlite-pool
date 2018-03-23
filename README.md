@@ -67,11 +67,9 @@ The only argument pass to the callback of `Promise.then()` is the database conne
 ### `node-gyp` error
 
 If you have any problem of downloading and installing this module, it's most 
-likely that you don't have a `node-gyp` installed in you project first, 
-which is used to compile `better-sqlite3` binary files. This module will try 
-to install `node-gyp` for you, but it may be after installing 
-`better-sqlite3`, thus causing your trouble. So manually install `node-gyp` 
-first if this situation suits you.
+likely that you don't have a `node-gyp` installed, which is used to compile 
+`better-sqlite3` binary files. so please install `node-gyp` first if this 
+situation occurs to you.
 
 ### `VCBulid.exe` error
 

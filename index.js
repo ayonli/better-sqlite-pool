@@ -11,9 +11,9 @@ class Pool extends EventEmitter {
     /**
      * Creates a new pool to store database connections.
      * 
-     * @param {String} path A SQLite database file path, can be set to 
+     * @param {string} path A SQLite database file path, can be set to 
      *  `:memory` to open a memory based database.
-     * @param {Object|Boolean|Number} options May contain any of these:
+     * @param {object|boolean|number} options May contain any of these:
      *  - `readonly` Default is `false`.
      *  - `memory` Default is `false`.
      *  - `fileMustExist` Default is `false`.
@@ -37,7 +37,7 @@ class Pool extends EventEmitter {
     /**
      * Acquires a connection from the pool.
      * @see https://github.com/JoshuaWise/better-sqlite3/wiki/API#class-database
-     * @return {Promise<Database>} 
+     * @returns {Promise<Database>} 
      */
     acquire() {
         var ids = Object.keys(this.connections),
