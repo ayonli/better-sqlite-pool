@@ -1,4 +1,4 @@
-const Pool = require("./");
+const { Pool } = require("./");
 
 var pool = new Pool("./example.db");
 

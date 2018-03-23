@@ -43,6 +43,7 @@ class Pool extends EventEmitter {
         var ids = Object.keys(this.connections),
             db = null,
             poolId = 0;
+
         for (let id of ids) {
             if (this.connections[id].available && this.connections[id].open) {
                 poolId = id;
@@ -51,6 +52,7 @@ class Pool extends EventEmitter {
                 break;
             }
         }
+
         if (db) {
             return new Promise(resolve => {
                 resolve(db);
@@ -58,11 +60,13 @@ class Pool extends EventEmitter {
         } else {
             if (ids.length < this.max) {
                 poolId = ids.length + 1;
+                
                 db = new Database(this.path, {
                     memory: this.memory,
                     readonly: this.readonly,
                     fileMustExist: this.fileMustExist,
                 });
+
                 db.available = false;
                 db.release = () => {
                     if (db.open && db.inTransaction) {
@@ -71,7 +75,9 @@ class Pool extends EventEmitter {
                     db.available = db.open && true;
                     this.emit("release", db);
                 };
+
                 this.connections[poolId] = db;
+
                 return new Promise(resolve => {
                     resolve(db);
                 });
@@ -96,5 +102,6 @@ class Pool extends EventEmitter {
         }
     }
 }
+Pool.Pool = Pool;
 
 module.exports = Pool;

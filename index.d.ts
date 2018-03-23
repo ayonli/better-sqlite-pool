@@ -1,7 +1,21 @@
 import { EventEmitter } from "events";
 import Database = require("better-sqlite3");
 
-class Pool extends EventEmitter {
+export interface PoolConnection extends Database {
+    /** Wheter the connection is available and can be acquired. */
+    readonly available: boolean;
+
+    /** Releases the connection. */
+    release(): void;
+}
+
+export class Pool extends EventEmitter {
+    readonly path: string;
+    readonly memory: boolean;
+    readonly fileMustExist: boolean;
+    readonly max: number;
+    protected connections: { [n: string]: PoolConnection }
+
     /**
      * Creates a new pool to store database connections.
      * 
@@ -12,7 +26,7 @@ class Pool extends EventEmitter {
      * 
      * @see https://github.com/JoshuaWise/better-sqlite3/wiki/API#new-databasepath-options
      */
-    constructor(path: string, options?: number| boolean | {
+    constructor(path: string, options?: number | boolean | {
         /** Default is `false`. */
         readonly: boolean;
         /** Default is `false`. */
@@ -27,7 +41,7 @@ class Pool extends EventEmitter {
      * Acquires a connection from the pool.
      * @see https://github.com/JoshuaWise/better-sqlite3/wiki/API#class-database
      */
-    acquire(): Promise<Database>;
+    acquire(): Promise<PoolConnection>;
 
     /**
      * Closes all connections in the pool.
@@ -35,5 +49,3 @@ class Pool extends EventEmitter {
      */
     close(): void;
 }
-
-export = Pool;

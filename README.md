@@ -9,7 +9,7 @@ connection once it has done its work.
 ## Example
 
 ```javascript
-const Pool = require("better-sqlite-pool");
+const { Pool } = require("better-sqlite-pool");
 
 // Create a new pool:
 var pool = new Pool("./example.db");

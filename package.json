@@ -3,6 +3,7 @@
     "version": "0.1.1",
     "description": "A connection pool for better-sqlite3.",
     "main": "index.js",
+    "types": "index.d.ts",
     "scripts": {
         "test": "node test"
     },
