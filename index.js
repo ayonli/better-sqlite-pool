@@ -1,4 +1,6 @@
-const EventEmitter = require("events");
+"use strict";
+
+const EventEmitter = require("events").EventEmitter;
 const Database = require("better-sqlite3");
 
 /**
@@ -60,7 +62,7 @@ class Pool extends EventEmitter {
         } else {
             if (ids.length < this.max) {
                 poolId = ids.length + 1;
-                
+
                 db = new Database(this.path, {
                     memory: this.memory,
                     readonly: this.readonly,
@@ -73,7 +75,7 @@ class Pool extends EventEmitter {
                         db.exec("rollback");
                     }
                     db.available = db.open && true;
-                    this.emit("release", db);
+                    this.emit("release");
                 };
 
                 this.connections[poolId] = db;
@@ -83,7 +85,7 @@ class Pool extends EventEmitter {
                 });
             } else {
                 return new Promise(resolve => {
-                    this.once("release", db => {
+                    this.once("release", () => {
                         resolve(this.acquire());
                     });
                 });
@@ -102,6 +104,4 @@ class Pool extends EventEmitter {
         }
     }
 }
-Pool.Pool = Pool;
-
-module.exports = Pool;
+exports.default = exports.Pool = Pool;

@@ -49,7 +49,7 @@ setImmediate(() => {
     - `fileMustExist` Default is `false`.
     - `max` Max connections in the pool, default is `5`.
     
-    If this argument is set to a boolean, it's equivalent to `readonly`, 
+    If this argument is set to a `boolean`, it's equivalent to `readonly`, 
     if set to a number, it's equivalent to `max`.
 
 ### `pool.acquire(): Promise<Database>`

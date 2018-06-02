@@ -49,3 +49,5 @@ export class Pool extends EventEmitter {
      */
     close(): void;
 }
+
+export default Pool;
