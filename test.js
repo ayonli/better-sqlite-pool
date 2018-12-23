@@ -29,10 +29,10 @@ pool.acquire().then(con => {
     var res = con.prepare("insert into `users` (`name`, `email`) values (?, ?)")
         .run(["Ayon Lee", "i@hyurl.com"]);
 
-    var res2 = con.prepare("select * from `users` where `id` =  ?").get(res.lastInsertROWID);
+    var res2 = con.prepare("select * from `users` where `id` =  ?").get(res.lastInsertRowid);
 
     assert.deepStrictEqual(res2, {
-        id: res.lastInsertROWID,
+        id: res.lastInsertRowid,
         name: "Ayon Lee",
         email: "i@hyurl.com"
     });
