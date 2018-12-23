@@ -56,13 +56,13 @@ setImmediate(() => {
 
 **Acquires a connection from the pool.**
 
-The only argument pass to the callback of `Promise.then()` is the database connection retrieved.
+The only argument passed to the callback of `Promise.then()` is the database connection acquired.
 
 ### `pool.close()`
 
 **Closes all connections in the pool.**
 
-## Issues
+## Potential Issues
 
 ### `node-gyp` error
 
@@ -73,6 +73,6 @@ situation occurs to you.
 
 ### `VCBulid.exe` error
 
-Another problem you may face is your computer throw an error that tells you 
+Another problem you may face is your computer throwing an error that tells you 
 the `VCBulid.exe` file is missing. This is probably you don't have a Visual 
 Studio installed, install one with VC++ support, that will fix the problem.

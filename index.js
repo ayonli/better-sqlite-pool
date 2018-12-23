@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 
 const EventEmitter = require("events").EventEmitter;
 const Database = require("better-sqlite3");
