@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 
 const EventEmitter = require("events").EventEmitter;
-const Database = require("better-sqlite3");
+const BetterSqlite3 = require("better-sqlite3");
 const pick = require("lodash/pick");
 
 /**
@@ -22,23 +22,28 @@ class Pool extends EventEmitter {
      *  - `memory` Default is `false`.
      *  - `fileMustExist` Default is `false`.
      *  - `max` Max connections in the pool, default is `5`.
+     *  - `timeout`
+     *  - `verbose`
      * 
      *  If this argument is set to a boolean, it's equivalent to `readonly`, 
      *  if set to a number, it's equivalent to `max`.
      * 
      * @see https://github.com/JoshuaWise/better-sqlite3/wiki/API#new-databasepath-options
      */
-    constructor(path, options = {}) {
+    constructor(path, options) {
         super();
 
-        if (typeof options === "boolean") {
+        if (options === undefined || options === null) {
+            options = {};
+        } else if (typeof options === "boolean") {
             options = { readonly: options };
         } else if (typeof options === "number") {
             options = { max: options };
         }
 
         this.path = path;
-        this.connections = {};
+        /** @type {BetterSqlite3.Database[]} */
+        this.connections = [];
         Object.assign(this, {
             readonly: false,
             memory: path === ":memory",
@@ -52,59 +57,51 @@ class Pool extends EventEmitter {
     /**
      * Acquires a connection from the pool.
      * @see https://github.com/JoshuaWise/better-sqlite3/wiki/API#class-database
-     * @returns {Promise<Database>} 
+     * @returns {Promise<BetterSqlite3.Database>} 
      */
     acquire() {
-        var ids = Object.keys(this.connections),
-            db = null,
-            poolId = 0;
+        for (let conn of this.connections) {
+            if (conn.available && conn.open) {
+                conn.available = false;
 
-        for (let id of ids) {
-            if (this.connections[id].available && this.connections[id].open) {
-                poolId = id;
-                db = this.connections[id];
-                db.available = false;
-                break;
+                return Promise.resolve(conn);
             }
         }
 
-        if (db) {
-            return new Promise(resolve => {
-                resolve(db);
-            });
+
+        if (this.connections.length < this.max) {
+            let conn = new BetterSqlite3(this.path, pick(this, [
+                "memory",
+                "readonly",
+                "fileMustExist",
+                "timeout",
+                "verbose"
+            ]));
+
+            this.connections.push(conn);
+            conn.available = false;
+            conn.release = () => {
+                if (conn.open && conn.inTransaction)
+                    conn.exec("rollback");
+
+                conn.available = conn.open && true;
+                this.emit("release");
+            };
+
+            return Promise.resolve(conn);
         } else {
-            if (ids.length < this.max) {
-                poolId = ids.length + 1;
-
-                db = new Database(this.path, pick(this, [
-                    "memory",
-                    "readonly",
-                    "fileMustExists",
-                    "timeout",
-                    "verbose"
-                ]));
-
-                db.available = false;
-                db.release = () => {
-                    if (db.open && db.inTransaction) {
-                        db.exec("rollback");
-                    }
-                    db.available = db.open && true;
-                    this.emit("release");
+            return new Promise((resolve, reject) => {
+                let handler = () => {
+                    clearTimeout(timer);
+                    resolve(this.acquire());
                 };
+                let timer = setTimeout(() => {
+                    this.removeListener("release", handler);
+                    reject(new Error("Timeout to acquire the connection."));
+                }, this.timeout);
 
-                this.connections[poolId] = db;
-
-                return new Promise(resolve => {
-                    resolve(db);
-                });
-            } else {
-                return new Promise(resolve => {
-                    this.once("release", () => {
-                        resolve(this.acquire());
-                    });
-                });
-            }
+                this.once("release", handler);
+            });
         }
     }
 
