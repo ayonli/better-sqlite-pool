@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import Database = require("better-sqlite3");
 
-export interface PoolConnection extends Database {
+export interface PoolConnection extends Database.Database {
     /** Wheter the connection is available and can be acquired. */
     readonly available: boolean;
 
@@ -13,6 +13,8 @@ export class Pool extends EventEmitter {
     readonly path: string;
     readonly memory: boolean;
     readonly fileMustExist: boolean;
+    readonly timeout: number;
+    readonly verbose: Function;
     readonly max: number;
     protected connections: { [n: string]: PoolConnection }
 
@@ -35,6 +37,8 @@ export class Pool extends EventEmitter {
         fileMustExist: boolean;
         /** Max connections in the pool, default is `5`. */
         max: number;
+        timeout: number;
+        verbose: Function;
     });
 
     /**

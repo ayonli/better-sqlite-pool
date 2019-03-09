@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 const EventEmitter = require("events").EventEmitter;
 const Database = require("better-sqlite3");
+const pick = require("lodash/pick");
 
 /**
  * A connection pool for the module `better-sqlite3`.
@@ -29,12 +30,23 @@ class Pool extends EventEmitter {
      */
     constructor(path, options = {}) {
         super();
+
+        if (typeof options === "boolean") {
+            options = { readonly: options };
+        } else if (typeof options === "number") {
+            options = { max: options };
+        }
+
         this.path = path;
-        this.readonly = typeof options === "boolean" ? options : (options.readonly || false);
-        this.memory = options.memory || this.path === ":memory";
-        this.fileMustExist = options.fileMustExist || false;
-        this.max = typeof options === "number" ? options : (options.max || 5);
         this.connections = {};
+        Object.assign(this, {
+            readonly: false,
+            memory: path === ":memory",
+            fileMustExist: false,
+            timeout: 5000,
+            verbose: null,
+            max: 5
+        }, options);
     }
 
     /**
@@ -64,11 +76,13 @@ class Pool extends EventEmitter {
             if (ids.length < this.max) {
                 poolId = ids.length + 1;
 
-                db = new Database(this.path, {
-                    memory: this.memory,
-                    readonly: this.readonly,
-                    fileMustExist: this.fileMustExist,
-                });
+                db = new Database(this.path, pick(this, [
+                    "memory",
+                    "readonly",
+                    "fileMustExists",
+                    "timeout",
+                    "verbose"
+                ]));
 
                 db.available = false;
                 db.release = () => {
