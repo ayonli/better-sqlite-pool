@@ -48,15 +48,19 @@ setImmediate(() => {
     - `memory` Default is `false`.
     - `fileMustExist` Default is `false`.
     - `max` Max connections in the pool, default is `5`.
+    - `timeout` The number of milliseconds to wait when executing queries on a 
+        locked database, before throwing a SQLITE_BUSY error. Also, this option 
+        is used to determine how long it'd be waited before throwing timeout 
+        error when acquiring the connection. (default: 5000).
+    - `verbose` A function that gets called with every SQL string executed by 
+        the database connection (default: `null`).
     
     If this argument is set to a `boolean`, it's equivalent to `readonly`, 
     if set to a number, it's equivalent to `max`.
 
-### `pool.acquire(): Promise<Database>`
+### `pool.acquire(): Promise<BetterSqlite3.Database>`
 
 **Acquires a connection from the pool.**
-
-The only argument passed to the callback of `Promise.then()` is the database connection acquired.
 
 ### `pool.close()`
 
@@ -76,3 +80,11 @@ situation occurs to you.
 Another problem you may face is your computer throwing an error that tells you 
 the `VCBulid.exe` file is missing. This is probably you don't have a Visual 
 Studio installed, install one with VC++ support, that will fix the problem.
+
+### `statement may fall through` errors
+
+These error will happen when compiling **better-sqlite3** with GCC 7+, which is 
+issued in [Many "statement may fall through" while installing #3](https://github.com/hyurl/better-sqlite-pool/issues/3)
+and [Many "statement may fall through" while installing #239](https://github.com/JoshuaWise/better-sqlite3/issues/239),
+you can still run the driver though, if it's not so much important, just leave 
+the error alone.

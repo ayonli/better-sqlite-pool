@@ -14,8 +14,7 @@ export interface PoolOptions extends BetterSqlite3.Options {
      * The number of milliseconds to wait when executing queries on a locked 
      * database, before throwing a SQLITE_BUSY error. Also, this option is used
      * to determine how long it'd be waited before throwing timeout error when 
-     * acquiring the connection.
-     * (default: 5000).
+     * acquiring the connection. (default: 5000).
      */
     timeout?: number;
     /**
