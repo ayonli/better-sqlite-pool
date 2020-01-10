@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const EventEmitter = require("events").EventEmitter;
 const BetterSqlite3 = require("better-sqlite3");
 const pick = require("lodash/pick");
+const releaseStr = 'release';
 
 /**
  * A connection pool for the module `better-sqlite3`.
@@ -41,6 +42,7 @@ class Pool extends EventEmitter {
             options = { max: options };
         }
 
+        this._clossingMode = false;
         this.path = path;
         /** @type {BetterSqlite3.Database[]} */
         this.connections = [];
@@ -60,6 +62,9 @@ class Pool extends EventEmitter {
      * @returns {Promise<BetterSqlite3.Database>} 
      */
     acquire() {
+        if (this._clossingMode) {
+            throw new Error('Database already clossed');
+        }
         return this._getAvailableConnection() || this._createConnection() || this._waitConnection();
     }
 
@@ -82,8 +87,13 @@ class Pool extends EventEmitter {
                 if (conn.open && conn.inTransaction)
                     conn.exec("rollback");
 
-                conn.available = conn.open && true;
-                this.emit("release");
+                if (this._clossingMode) {
+                    conn.close();
+                }
+                else {
+                    conn.available = conn.open && true;
+                    this.emit(releaseStr);
+                }
             };
 
             if (this.onConnectionCreated) {
@@ -117,11 +127,11 @@ class Pool extends EventEmitter {
                 resolve(this.acquire());
             };
             let timer = setTimeout(() => {
-                this.removeListener("release", handler);
+                this.removeListener(releaseStr, handler);
                 reject(new Error("Timeout to acquire the connection."));
             }, this.timeout);
 
-            this.once("release", handler);
+            this.once(releaseStr, handler);
         });
     }
 
@@ -130,9 +140,12 @@ class Pool extends EventEmitter {
      * @see https://github.com/JoshuaWise/better-sqlite3/wiki/API#close---this
      */
     close() {
+        this._clossingMode = true;
         for (let id in this.connections) {
-            if (this.connections[id].open)
-                this.connections[id].close();
+            const conn = this.connections[id];
+            if (conn.available && conn.open) {
+                conn.close();
+            }
         }
     }
 }
