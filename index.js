@@ -60,25 +60,23 @@ class Pool extends EventEmitter {
      * @returns {Promise<BetterSqlite3.Database>} 
      */
     acquire() {
+        return this._getAvailableConnection() || this._createConnection() || this._waitConnection();
+    }
+
+    _getAvailableConnection() {
         for (let conn of this.connections) {
             if (conn.available && conn.open) {
                 conn.available = false;
-
                 return Promise.resolve(conn);
             }
         }
+        return false;
+    }
 
-
+    _createConnection() {
         if (this.connections.length < this.max) {
-            let conn = new BetterSqlite3(this.path, pick(this, [
-                "memory",
-                "readonly",
-                "fileMustExist",
-                "timeout",
-                "verbose"
-            ]));
+            let conn = this._rawCreateConnection();
 
-            this.connections.push(conn);
             conn.available = false;
             conn.release = () => {
                 if (conn.open && conn.inTransaction)
@@ -88,21 +86,43 @@ class Pool extends EventEmitter {
                 this.emit("release");
             };
 
-            return Promise.resolve(conn);
-        } else {
-            return new Promise((resolve, reject) => {
-                let handler = () => {
-                    clearTimeout(timer);
-                    resolve(this.acquire());
-                };
-                let timer = setTimeout(() => {
-                    this.removeListener("release", handler);
-                    reject(new Error("Timeout to acquire the connection."));
-                }, this.timeout);
+            if (this.onConnectionCreated) {
+                this.onConnectionCreated(conn);
+            }
 
-                this.once("release", handler);
-            });
+            this.connections.push(conn);
+            return Promise.resolve(conn);
         }
+        return false;
+    }
+
+    /**
+     * low level create connection
+     * TODO: this should be abstract method for universal Database Pool
+     */
+    _rawCreateConnection() {
+        return new BetterSqlite3(this.path, pick(this, [
+            "memory",
+            "readonly",
+            "fileMustExist",
+            "timeout",
+            "verbose"
+        ]));
+    }
+
+    _waitConnection() {
+        return new Promise((resolve, reject) => {
+            let handler = () => {
+                clearTimeout(timer);
+                resolve(this.acquire());
+            };
+            let timer = setTimeout(() => {
+                this.removeListener("release", handler);
+                reject(new Error("Timeout to acquire the connection."));
+            }, this.timeout);
+
+            this.once("release", handler);
+        });
     }
 
     /**
