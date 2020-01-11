@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const EventEmitter = require("events").EventEmitter;
 const BetterSqlite3 = require("better-sqlite3");
 const pick = require("lodash/pick");
-const releaseStr = 'release';
+const releaseEvent = "release";
 
 /**
  * A connection pool for the module `better-sqlite3`.
@@ -42,7 +42,7 @@ class Pool extends EventEmitter {
             options = { max: options };
         }
 
-        this._clossingMode = false;
+        this._closed = false;
         this.path = path;
         /** @type {BetterSqlite3.Database[]} */
         this.connections = [];
@@ -62,10 +62,12 @@ class Pool extends EventEmitter {
      * @returns {Promise<BetterSqlite3.Database>} 
      */
     acquire() {
-        if (this._clossingMode) {
-            throw new Error('Database already clossed');
+        if (this._closed) {
+            throw new Error("Database already closed");
         }
-        return this._getAvailableConnection() || this._createConnection() || this._waitConnection();
+        return this._getAvailableConnection()
+            || this._createConnection()
+            || this._waitConnection();
     }
 
     _getAvailableConnection() {
@@ -87,12 +89,12 @@ class Pool extends EventEmitter {
                 if (conn.open && conn.inTransaction)
                     conn.exec("rollback");
 
-                if (this._clossingMode) {
+                if (this._closed) {
                     conn.close();
                 }
                 else {
                     conn.available = conn.open && true;
-                    this.emit(releaseStr);
+                    this.emit(releaseEvent);
                 }
             };
 
@@ -127,11 +129,11 @@ class Pool extends EventEmitter {
                 resolve(this.acquire());
             };
             let timer = setTimeout(() => {
-                this.removeListener(releaseStr, handler);
+                this.removeListener(releaseEvent, handler);
                 reject(new Error("Timeout to acquire the connection."));
             }, this.timeout);
 
-            this.once(releaseStr, handler);
+            this.once(releaseEvent, handler);
         });
     }
 
@@ -140,7 +142,7 @@ class Pool extends EventEmitter {
      * @see https://github.com/JoshuaWise/better-sqlite3/wiki/API#close---this
      */
     close() {
-        this._clossingMode = true;
+        this._closed = true;
         for (let id in this.connections) {
             const conn = this.connections[id];
             if (conn.available && conn.open) {
