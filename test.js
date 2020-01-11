@@ -13,11 +13,15 @@ if (fs.existsSync(filename)) {
 var pool = new Pool("./example.db"),
     connection = null;
 
+pool.onConnectionCreated = function (conn) {
+    conn.exec("ATTACH DATABASE 'log.db' AS log;");
+}
+
 pool.acquire().then(con => {
     connection = con;
 
     var ddl = [
-        "create table `users` (",
+        "create table if not exists `users` (",
         "  `id` integer primary key autoincrement not null,",
         "  `name` varchar(32) not null,",
         "  `email` varchar(255)",
@@ -37,6 +41,25 @@ pool.acquire().then(con => {
         email: "i@hyurl.com"
     });
 
+    var logDDL = [
+        "create table if not exists `log`.`request` (",
+        "  `id` integer primary key autoincrement not null,",
+        "  `text` varchar(255)",
+        ")"
+    ].join("\n");
+
+    con.exec(logDDL);
+
+    var res3 = con.prepare("insert into `log`.`request` (`text`) values (?)")
+        .run(["okay"]);
+
+    var res4 = con.prepare("select * from `log`.`request` where `id` =  ?").get(res3.lastInsertRowid);
+
+    assert.deepStrictEqual(res4, {
+        id: res3.lastInsertRowid,
+        text: "okay",
+    });
+
     con.release();
 }).catch(err => {
     console.log(err);
@@ -48,6 +71,7 @@ setTimeout(() => {
         assert.equal(con, connection);
         pool.close();
 
+        con.release();
         console.log("#### OK ####");
     });
 }, 100);

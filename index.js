@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const EventEmitter = require("events").EventEmitter;
 const BetterSqlite3 = require("better-sqlite3");
 const pick = require("lodash/pick");
+const releaseStr = 'release';
 
 /**
  * A connection pool for the module `better-sqlite3`.
@@ -41,6 +42,7 @@ class Pool extends EventEmitter {
             options = { max: options };
         }
 
+        this._clossingMode = false;
         this.path = path;
         /** @type {BetterSqlite3.Database[]} */
         this.connections = [];
@@ -60,49 +62,77 @@ class Pool extends EventEmitter {
      * @returns {Promise<BetterSqlite3.Database>} 
      */
     acquire() {
+        if (this._clossingMode) {
+            throw new Error('Database already clossed');
+        }
+        return this._getAvailableConnection() || this._createConnection() || this._waitConnection();
+    }
+
+    _getAvailableConnection() {
         for (let conn of this.connections) {
             if (conn.available && conn.open) {
                 conn.available = false;
-
                 return Promise.resolve(conn);
             }
         }
+        return false;
+    }
 
-
+    _createConnection() {
         if (this.connections.length < this.max) {
-            let conn = new BetterSqlite3(this.path, pick(this, [
-                "memory",
-                "readonly",
-                "fileMustExist",
-                "timeout",
-                "verbose"
-            ]));
+            let conn = this._rawCreateConnection();
 
-            this.connections.push(conn);
             conn.available = false;
             conn.release = () => {
                 if (conn.open && conn.inTransaction)
                     conn.exec("rollback");
 
-                conn.available = conn.open && true;
-                this.emit("release");
+                if (this._clossingMode) {
+                    conn.close();
+                }
+                else {
+                    conn.available = conn.open && true;
+                    this.emit(releaseStr);
+                }
             };
 
-            return Promise.resolve(conn);
-        } else {
-            return new Promise((resolve, reject) => {
-                let handler = () => {
-                    clearTimeout(timer);
-                    resolve(this.acquire());
-                };
-                let timer = setTimeout(() => {
-                    this.removeListener("release", handler);
-                    reject(new Error("Timeout to acquire the connection."));
-                }, this.timeout);
+            if (this.onConnectionCreated) {
+                this.onConnectionCreated(conn);
+            }
 
-                this.once("release", handler);
-            });
+            this.connections.push(conn);
+            return Promise.resolve(conn);
         }
+        return false;
+    }
+
+    /**
+     * low level create connection
+     * TODO: this should be abstract method for universal Database Pool
+     */
+    _rawCreateConnection() {
+        return new BetterSqlite3(this.path, pick(this, [
+            "memory",
+            "readonly",
+            "fileMustExist",
+            "timeout",
+            "verbose"
+        ]));
+    }
+
+    _waitConnection() {
+        return new Promise((resolve, reject) => {
+            let handler = () => {
+                clearTimeout(timer);
+                resolve(this.acquire());
+            };
+            let timer = setTimeout(() => {
+                this.removeListener(releaseStr, handler);
+                reject(new Error("Timeout to acquire the connection."));
+            }, this.timeout);
+
+            this.once(releaseStr, handler);
+        });
     }
 
     /**
@@ -110,9 +140,12 @@ class Pool extends EventEmitter {
      * @see https://github.com/JoshuaWise/better-sqlite3/wiki/API#close---this
      */
     close() {
+        this._clossingMode = true;
         for (let id in this.connections) {
-            if (this.connections[id].open)
-                this.connections[id].close();
+            const conn = this.connections[id];
+            if (conn.available && conn.open) {
+                conn.close();
+            }
         }
     }
 }
