@@ -1,6 +1,6 @@
 {
     "name": "better-sqlite-pool",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "description": "A connection pool for better-sqlite3.",
     "main": "index.js",
     "types": "index.d.ts",
