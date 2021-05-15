@@ -8,9 +8,9 @@
         "test": "node test"
     },
     "author": {
-        "name": "Ayon Lee",
+        "name": "A-yon Lee",
         "email": "i@hyurl.com",
-        "url": "http://hyurl.com"
+        "url": "https://github.com/hyurl"
     },
     "repository": {
         "type": "git",
