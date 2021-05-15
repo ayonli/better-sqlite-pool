@@ -1,6 +1,6 @@
 {
     "name": "better-sqlite-pool",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "A connection pool for better-sqlite3.",
     "main": "index.js",
     "types": "index.d.ts",
@@ -21,15 +21,11 @@
         "email": "i@hyurl.com"
     },
     "license": "MIT",
-    "dependencies": {
-        "better-sqlite3": "^7.3.1",
-        "lodash": "^4.17.15"
-    },
     "engines": {
         "node": ">=8.0"
     },
     "devDependencies": {
         "@types/better-sqlite3": "^5.4.1",
-        "@types/lodash": "^4.14.149"
+        "better-sqlite3": "^7.4.0"
     }
 }

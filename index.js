@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 const EventEmitter = require("events").EventEmitter;
 const BetterSqlite3 = require("better-sqlite3");
-const pick = require("lodash/pick");
+const isV7 = parseInt(require("better-sqlite3/package.json").version) >= 7;
 const releaseEvent = "release";
 
 /**
@@ -113,13 +113,20 @@ class Pool extends EventEmitter {
      * TODO: this should be abstract method for universal Database Pool
      */
     _rawCreateConnection() {
-        return new BetterSqlite3(this.path, pick(this, [
-            "memory",
-            "readonly",
-            "fileMustExist",
-            "timeout",
-            "verbose"
-        ]));
+        const options = {
+            "readonly": this.readonly,
+            "fileMustExist": this.fileMustExist,
+            "timeout": this.timeout,
+            "verbose": this.verbose,
+        };
+
+        if (isV7) {
+            options[":memory"] = this.memory;
+        } else {
+            options["memory"] = this.memory;
+        }
+
+        return new BetterSqlite3(this.path, options);
     }
 
     _waitConnection() {

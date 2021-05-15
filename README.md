@@ -6,6 +6,15 @@
 Using this module to open pools and acquire connections, and `release` the 
 connection once it has done its work.
 
+NOTE: Since v0.3.1, this package no longer includes `better-sqlite3` by default,
+you have to install it explicitly.
+
+## Install
+
+```sh
+npm i better-sqlite3 better-sqlite-pool
+```
+
 ## Example
 
 ```javascript
