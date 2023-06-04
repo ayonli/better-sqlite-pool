@@ -149,9 +149,9 @@ export class Pool extends EventEmitter implements PoolOptions {
         };
 
         if (isV7) {
-            options[":memory"] = this.memory;
+            Object.assign(options, { [":memory"]: this.memory });
         } else {
-            options["memory"] = this.memory;
+            Object.assign(options, { memory: this.memory });
         }
 
         return new BetterSqlite3(this.path, options);

@@ -1,0 +1,9 @@
+.vscode/
+.github/
+node_modules/
+*.db
+*.tgz
+*.ts
+!*.d.ts
+*.js.map
+test*

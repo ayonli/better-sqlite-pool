@@ -5,7 +5,7 @@
     "main": "index.js",
     "types": "index.d.ts",
     "scripts": {
-        "prepublishOnly": "tsc --module commonjs --target es2015 --sourceMap true --declaration true --noImplicitThis true --noImplicitAny true index.ts",
+        "prepublishOnly": "tsc --module commonjs --target es2015 --declaration true --noImplicitThis true --noImplicitAny true index.ts",
         "postpublish": "ls index.* | grep -v index.ts | xargs rm -f",
         "pretest": "tsc --module commonjs --target es2015 test.ts",
         "posttest": "rm -f test.js && rm -f *.db && ls index.js* | xargs rm -f",
