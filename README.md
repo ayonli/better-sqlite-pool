@@ -1,13 +1,13 @@
 # Better-SQLite-Pool
 
 **A connection pool for the module**
-**[better-sqlite3](https://github.com/JoshuaWise/better-sqlite3).**
+**[better-sqlite3](https://github.com/WiseLibs/better-sqlite3).**
 
 Using this module to open pools and acquire connections, and `release` the 
 connection once it has done its work.
 
-NOTE: Since v0.3.1, this package no longer includes `better-sqlite3` by default,
-you have to install it explicitly.
+NOTE: Since v0.3.1, this package no longer includes **better-sqlite3** by
+default, you have to install it explicitly.
 
 ## Install
 
@@ -80,8 +80,9 @@ setImmediate(() => {
 ### `node-gyp` error
 
 If you have any problem of downloading and installing this module, it's most 
-likely that you don't have a `node-gyp` installed, which is used to compile 
-`better-sqlite3` binary files. so please install `node-gyp` first if this 
+likely that you're running an old version Node.js which doesn't include prebuilt
+**better-sqlite3** binary files, and don't have a `node-gyp` installed, which is
+used to compile **better-sqlite3**. so please install `node-gyp` first if this
 situation occurs to you.
 
 ### `VCBulid.exe` error
@@ -92,8 +93,9 @@ Studio installed, install one with VC++ support, that will fix the problem.
 
 ### `statement may fall through` errors
 
-These error will happen when compiling **better-sqlite3** with GCC 7+, which is 
-issued in [Many "statement may fall through" while installing #3](https://github.com/hyurl/better-sqlite-pool/issues/3)
-and [Many "statement may fall through" while installing #239](https://github.com/JoshuaWise/better-sqlite3/issues/239),
+These error may happen when compiling **better-sqlite3** (version under v7.0)
+with GCC 7+, which is issued
+in [Many "statement may fall through" while installing #3](https://github.com/ayonli/better-sqlite-pool/issues/3)
+and [Ignore compilation warnings from SQLite3 itself #239](https://github.com/WiseLibs/better-sqlite3/issues/239),
 you can still run the driver though, if it's not so much important, just leave 
 the error alone.

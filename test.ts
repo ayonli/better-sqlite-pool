@@ -1,8 +1,6 @@
-"use strict";
-
-const Pool = require("./").Pool;
-const assert = require("assert");
-const fs = require("fs");
+import { Pool, PoolConnection } from ".";
+import * as assert from "assert";
+import * as fs from "fs";
 
 var filename = "./example.db";
 
@@ -10,12 +8,12 @@ if (fs.existsSync(filename)) {
     fs.unlinkSync(filename);
 }
 
-var pool = new Pool("./example.db"),
-    connection = null;
+const pool = new Pool("./example.db");
+let connection: PoolConnection;
 
 pool.onConnectionCreated = function (conn) {
     conn.exec("ATTACH DATABASE 'log.db' AS log;");
-}
+};
 
 pool.acquire().then(con => {
     connection = con;
@@ -31,14 +29,14 @@ pool.acquire().then(con => {
     con.exec(ddl);
 
     var res = con.prepare("insert into `users` (`name`, `email`) values (?, ?)")
-        .run(["Ayon Lee", "i@hyurl.com"]);
+        .run(["A-yon Lee", "the@ayon.li"]);
 
     var res2 = con.prepare("select * from `users` where `id` =  ?").get(res.lastInsertRowid);
 
     assert.deepStrictEqual(res2, {
         id: res.lastInsertRowid,
-        name: "Ayon Lee",
-        email: "i@hyurl.com"
+        name: "A-yon Lee",
+        email: "the@ayon.li"
     });
 
     var logDDL = [
